@@ -20,7 +20,7 @@ function Home() {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState(null);
   const [filterValue, setFilterValue] = useState('');
-  const [loading , setLoading ] = useState(true);
+  const [loading, setLoading] = useState(true);
   const open = Boolean(anchorEl);
 
   const id = open ? 'filters-popover' : undefined;
@@ -34,13 +34,13 @@ function Home() {
       const response = await fetch('https://o136z8hk40.execute-api.us-east-1.amazonaws.com/dev/get-list-of-conferences');
       const responseJSON = await response.json();
       let existConf = [];
-      existConf = responseJSON.free.concat(responseJSON.paid);
+      existConf = (responseJSON.free || []).concat(responseJSON.paid);
       setConfDetails(existConf);
       setAllConfDetails(existConf);
       setLoading(false);
     }
     apiData();
-    
+
   }, [confInfo]);
 
   const handleAnchorClick = (event) => {
@@ -56,6 +56,7 @@ function Home() {
       return (conf.confName.toLowerCase().startsWith(e.target.value.toLowerCase())
         || conf.city.toLowerCase().startsWith(e.target.value.toLowerCase()));
     })
+
     setConfDetails(filteredArray);
   }
   const sortByCity = () => {
@@ -107,11 +108,15 @@ function Home() {
               }}
             >
               <div className="home__filters flex">
-                <form className={classes.root} noValidate autoComplete="off">
+                <form className={classes.root} noValidate autoComplete="off" onSubmit={(e) => {
+                  e.preventDefault();
+                  return false;
+                }} >
                   <TextField
                     id="standard-basic"
                     label="Search by Name or City"
-                    onChange={(e) => handleSearch(e)} />
+                    onChange={(e) => handleSearch(e)}
+                  />
                 </form>
                 <FormControl className={classes.formControl}>
                   <InputLabel id="demo-simple-select-label">Filter</InputLabel>
@@ -132,12 +137,12 @@ function Home() {
           </div>
         </div>
       </div>
-     
-     {!loading ? <div className="home__conferences flex">
+
+      {!loading ? <div className="home__conferences flex">
         {
-          confDetails ?
-            confDetails.map((conf) => {
-              return <div className="conference__item">
+          confDetails.length ?
+            confDetails.map((conf, index) => {
+              return <div className="conference__item" key={index}>
                 <div className="item__fare">
                   <div className="item__fare__inner">
                     <div>
@@ -173,9 +178,9 @@ function Home() {
                   </div>
                 </div>
               </div>
-            }) : ''
+            }) : <div className="flex loading"><h1>No results found</h1></div>
         }
-      </div> : <div className="flex loading"><h1>Loading...</h1></div> } 
+      </div> : <div className="flex loading"><h1>Loading...</h1></div>}
     </div>
   )
 }
